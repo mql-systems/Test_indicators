@@ -10,18 +10,18 @@
 
 //--- properties
 #property indicator_buffers 4
-#property indicator_plots 1
+#property indicator_plots 3
 //---
 #property indicator_type1  DRAW_ZIGZAG
 #property indicator_label1 "ZigZag Up;ZigZag Down"
 #property indicator_color1 clrOrange
 //---
-#property indicator_type2  DRAW_NONE
-#property indicator_label2 "ZigZag Trend"
+#property indicator_type2  DRAW_ARROW
+#property indicator_color2 clrRed
+#property indicator_label2 "ZigZag change points"
 //---
-#property indicator_type3  DRAW_ARROW
-#property indicator_color3 clrRed
-#property indicator_label3 "ZigZag Trend change"
+#property indicator_type3  DRAW_NONE
+#property indicator_label3 "ZigZag Trend"
 
 //--- defines
 #define BUFFER_EMPTY        0.0
@@ -31,8 +31,8 @@
 //--- buffers
 double g_bufferZigZagUp[];
 double g_bufferZigZagDown[];
-double g_bufferTrend[];
-double g_bufferChangePoints[];
+double g_bufferZigZagTrend[];
+double g_bufferZigZagChangePoints[];
 
 //--- global variables
 datetime g_lastBarTime = 0;
@@ -46,8 +46,8 @@ int OnInit()
 
    SetIndexBuffer(0, g_bufferZigZagUp);
    SetIndexBuffer(1, g_bufferZigZagDown);
-   SetIndexBuffer(2, g_bufferTrend);
-   SetIndexBuffer(3, g_bufferChangePoints);
+   SetIndexBuffer(2, g_bufferZigZagChangePoints);
+   SetIndexBuffer(3, g_bufferZigZagTrend);
 
    PlotIndexSetDouble(0, PLOT_EMPTY_VALUE, BUFFER_EMPTY);
    PlotIndexSetDouble(1, PLOT_EMPTY_VALUE, BUFFER_EMPTY);
@@ -88,8 +88,8 @@ int OnCalculate(const int ratesTotal,
       limit--;
       g_bufferZigZagUp[limit] = high[limit];
       g_bufferZigZagDown[limit] = low[limit];
-      g_bufferTrend[limit] = BUFFER_EMPTY;
-      g_bufferChangePoints[limit] = BUFFER_EMPTY;
+      g_bufferZigZagTrend[limit] = BUFFER_EMPTY;
+      g_bufferZigZagChangePoints[limit] = BUFFER_EMPTY;
    }
    else if (time[limit] != g_lastBarTime)
       return 0;
@@ -103,10 +103,65 @@ int OnCalculate(const int ratesTotal,
 
    for (int i = limit - 1; i > 0; i--)
    {
-      // - CALC -
+      g_bufferZigZagUp[i] = BUFFER_EMPTY;
+      g_bufferZigZagDown[i] = BUFFER_EMPTY;
+      g_bufferZigZagTrend[i] = BUFFER_EMPTY;
+      g_bufferZigZagChangePoints[i] = BUFFER_EMPTY;
+
+      if (high[i+1] < high[i])
+      {
+         if (low[i+1] < low[i])
+            ChangeZigZagUp(ratesTotal, i, high[i]);
+      }
+      else if (low[i+1] > low[i])
+         ChangeZigZagDown(ratesTotal, i, low[i]);
    }
 
    return ratesTotal;
+}
+
+//+------------------------------------------------------------------+
+//| Сдвинуть ZigZag Up                                               |
+//+------------------------------------------------------------------+
+void ChangeZigZagUp(int ratesTotal, int i, double high)
+{
+   for (int j = i + 1; j < ratesTotal; j++)
+   {
+      if (g_bufferZigZagTrend[j] > 0)
+      {
+         g_bufferZigZagUp[j] = BUFFER_EMPTY;
+         break;
+      }
+      else if (g_bufferZigZagTrend[j] < 0)
+         break;
+   }
+
+   g_bufferZigZagUp[i] = high;
+   g_bufferZigZagDown[i] = BUFFER_EMPTY;
+   g_bufferZigZagTrend[i] = BUFFER_TREND_UP;
+   g_bufferZigZagChangePoints[i] = high;
+}
+
+//+------------------------------------------------------------------+
+//| Сдвинуть ZigZag Down                                             |
+//+------------------------------------------------------------------+
+void ChangeZigZagDown(int ratesTotal, int i, double low)
+{
+   for (int j = i + 1; j < ratesTotal; j++)
+   {
+      if (g_bufferZigZagTrend[j] < 0)
+      {
+         g_bufferZigZagDown[j] = BUFFER_EMPTY;
+         break;
+      }
+      else if (g_bufferZigZagTrend[j] > 0)
+         break;
+   }
+
+   g_bufferZigZagUp[i] = BUFFER_EMPTY;
+   g_bufferZigZagDown[i] = low;
+   g_bufferZigZagTrend[i] = BUFFER_TREND_DOWN;
+   g_bufferZigZagChangePoints[i] = low;
 }
 
 //+------------------------------------------------------------------+
@@ -116,13 +171,13 @@ void BufferInitialize()
 {
    ArrayInitialize(g_bufferZigZagUp, BUFFER_EMPTY);
    ArrayInitialize(g_bufferZigZagDown, BUFFER_EMPTY);
-   ArrayInitialize(g_bufferTrend, BUFFER_EMPTY);
-   ArrayInitialize(g_bufferChangePoints, BUFFER_EMPTY);
+   ArrayInitialize(g_bufferZigZagTrend, BUFFER_EMPTY);
+   ArrayInitialize(g_bufferZigZagChangePoints, BUFFER_EMPTY);
 
    ArraySetAsSeries(g_bufferZigZagUp, true);
    ArraySetAsSeries(g_bufferZigZagDown, true);
-   ArraySetAsSeries(g_bufferTrend, true);
-   ArraySetAsSeries(g_bufferChangePoints, true);
+   ArraySetAsSeries(g_bufferZigZagTrend, true);
+   ArraySetAsSeries(g_bufferZigZagChangePoints, true);
 }
 
 //+------------------------------------------------------------------+
