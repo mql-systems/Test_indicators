@@ -17,7 +17,7 @@
 #property indicator_color1 clrOrange
 //---
 #property indicator_type2  DRAW_ARROW
-#property indicator_color2 clrRed
+#property indicator_color2 clrNONE
 #property indicator_label2 "ZigZag Change Points"
 //---
 #property indicator_type3  DRAW_NONE
@@ -27,6 +27,9 @@
 #define BUFFER_EMPTY        0.0
 #define BUFFER_TREND_UP     1.0
 #define BUFFER_TREND_DOWN  -1.0
+
+//--- inputs
+input bool i_IsShowZigZagChangePoints = true;   // Shows the ZigZag change points
 
 //--- buffers
 double g_bufferZigZagUp[];
@@ -49,11 +52,12 @@ int OnInit()
    SetIndexBuffer(2, g_bufferZigZagChangePoints);
    SetIndexBuffer(3, g_bufferZigZagTrend);
 
-   PlotIndexSetDouble(0, PLOT_EMPTY_VALUE, BUFFER_EMPTY);
-   PlotIndexSetDouble(1, PLOT_EMPTY_VALUE, BUFFER_EMPTY);
-   PlotIndexSetDouble(2, PLOT_EMPTY_VALUE, BUFFER_EMPTY);
-   PlotIndexSetDouble(3, PLOT_EMPTY_VALUE, BUFFER_EMPTY);
+   PlotIndexSetDouble(0, PLOT_EMPTY_VALUE, BUFFER_EMPTY);   // 0 = ZigZag Up & Down (BufferUp & BufferDown)
+   PlotIndexSetDouble(1, PLOT_EMPTY_VALUE, BUFFER_EMPTY);   // 1 = ZagZag Change Points
+   PlotIndexSetDouble(2, PLOT_EMPTY_VALUE, BUFFER_EMPTY);   // 2 = ZagZag Trend
 
+   PlotIndexSetInteger(1, PLOT_LINE_COLOR, i_IsShowZigZagChangePoints ? clrRed : clrNONE);
+   
    BufferInitialize();
 
    return INIT_SUCCEEDED;
