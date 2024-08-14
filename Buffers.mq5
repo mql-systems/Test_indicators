@@ -117,6 +117,7 @@ int OnCalculate(const int ratesTotal,
    //--- calculate
    ArraySetAsSeries(high, true);
    ArraySetAsSeries(low,  true);
+   ArraySetAsSeries(open, true);
    ArraySetAsSeries(time, true);
 
    for (int i = limit - 1; i > 0; i--)
