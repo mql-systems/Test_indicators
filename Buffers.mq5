@@ -1,10 +1,10 @@
 //+------------------------------------------------------------------+
 //|                                                    ZigZagMax.mq5 |
 //|                            Copyright 2024, Diamond Systems Corp. |
-//|                                   https://github.com/mql-systems |
+//|                   https://github.com/mql-systems/Test_indicators |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2024, Diamond Systems Corp."
-#property link      "https://github.com/mql-systems"
+#property link      "https://github.com/mql-systems/Test_indicators"
 #property version   "1.00"
 #property indicator_chart_window
 
