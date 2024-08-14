@@ -18,7 +18,7 @@
 //---
 #property indicator_type2  DRAW_ARROW
 #property indicator_color2 clrRed
-#property indicator_label2 "ZigZag change points"
+#property indicator_label2 "ZigZag Change Points"
 //---
 #property indicator_type3  DRAW_NONE
 #property indicator_label3 "ZigZag Trend"
@@ -86,10 +86,20 @@ int OnCalculate(const int ratesTotal,
       BufferInitialize();
 
       limit--;
-      g_bufferZigZagUp[limit] = high[limit];
-      g_bufferZigZagDown[limit] = low[limit];
-      g_bufferZigZagTrend[limit] = BUFFER_EMPTY;
-      g_bufferZigZagChangePoints[limit] = BUFFER_EMPTY;
+      if (open[limit] > close[limit])
+      {
+         g_bufferZigZagUp[limit] = BUFFER_EMPTY;
+         g_bufferZigZagDown[limit] = low[limit];
+         g_bufferZigZagTrend[limit] = BUFFER_TREND_DOWN;
+         g_bufferZigZagChangePoints[limit] = low[limit];
+      }
+      else
+      {
+         g_bufferZigZagUp[limit] = high[limit];
+         g_bufferZigZagDown[limit] = BUFFER_EMPTY;
+         g_bufferZigZagTrend[limit] = BUFFER_TREND_UP;
+         g_bufferZigZagChangePoints[limit] = high[limit];
+      }
    }
    else if (time[limit] != g_lastBarTime)
       return 0;
@@ -103,18 +113,17 @@ int OnCalculate(const int ratesTotal,
 
    for (int i = limit - 1; i > 0; i--)
    {
-      g_bufferZigZagUp[i] = BUFFER_EMPTY;
-      g_bufferZigZagDown[i] = BUFFER_EMPTY;
-      g_bufferZigZagTrend[i] = BUFFER_EMPTY;
-      g_bufferZigZagChangePoints[i] = BUFFER_EMPTY;
-
       if (high[i+1] < high[i])
       {
-         if (low[i+1] < low[i])
+         if (low[i+1] < low[i] || g_bufferZigZagTrend[i] > 0)
             ChangeZigZagUp(ratesTotal, i, high[i]);
+         else
+            ChangeZigZagDown(ratesTotal, i, low[i]);
       }
-      else if (low[i+1] > low[i])
+      else if (low[i+1] > low[i] || g_bufferZigZagTrend[i] < 0)
          ChangeZigZagDown(ratesTotal, i, low[i]);
+      else
+         ChangeZigZagUp(ratesTotal, i, high[i]);
    }
 
    return ratesTotal;
