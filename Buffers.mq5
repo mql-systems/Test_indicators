@@ -10,7 +10,7 @@
 
 //--- properties
 #property indicator_buffers 5
-#property indicator_plots 3
+#property indicator_plots 2
 //---
 #property indicator_type1  DRAW_ZIGZAG
 #property indicator_label1 "ZigZag Up;ZigZag Down"
@@ -19,9 +19,6 @@
 #property indicator_type2  DRAW_ARROW
 #property indicator_color2 clrNONE
 #property indicator_label2 "ZigZag Change Points"
-//---
-#property indicator_type3  DRAW_NONE
-#property indicator_label3 "ZigZag Trend"
 
 //--- defines
 #define BUFFER_EMPTY        0.0
@@ -37,6 +34,7 @@ double g_bufferZigZagDown[];
 double g_bufferZigZagTrend[];
 double g_bufferZigZagChangePoints[];
 double g_bufferTestOpenPrice[];
+// double g_bufferTestClosePrice[];
 
 //--- global variables
 datetime g_lastBarTime = 0;
@@ -51,8 +49,9 @@ int OnInit()
    SetIndexBuffer(0, g_bufferZigZagUp);
    SetIndexBuffer(1, g_bufferZigZagDown);
    SetIndexBuffer(2, g_bufferZigZagChangePoints);
-   SetIndexBuffer(3, g_bufferZigZagTrend);
-   SetIndexBuffer(4, g_bufferTestOpenPrice);
+   SetIndexBuffer(3, g_bufferZigZagTrend, INDICATOR_CALCULATIONS);
+   SetIndexBuffer(4, g_bufferTestOpenPrice, INDICATOR_CALCULATIONS);
+   // SetIndexBuffer(5, g_bufferTestClosePrice, INDICATOR_CALCULATIONS);   // TODO: Will not work because the number of reserved buffers is 5 !!!
 
    PlotIndexSetDouble(0, PLOT_EMPTY_VALUE, BUFFER_EMPTY);   // 0 = ZigZag Up & Down (BufferUp & BufferDown)
    PlotIndexSetDouble(1, PLOT_EMPTY_VALUE, BUFFER_EMPTY);   // 1 = ZagZag Change Points
@@ -86,6 +85,11 @@ int OnCalculate(const int ratesTotal,
    if (ratesTotal < 2 || prevCalculated < 0)
       return 0;
    
+   ArraySetAsSeries(high, true);
+   ArraySetAsSeries(low,  true);
+   ArraySetAsSeries(open, true);
+   ArraySetAsSeries(time, true);
+
    //--- first start indicator (initialize)
    if (prevCalculated == 0)
    {
@@ -93,6 +97,7 @@ int OnCalculate(const int ratesTotal,
 
       limit--;
       g_bufferTestOpenPrice[limit] = open[limit];
+      // g_bufferTestClosePrice[limit] = close[limit];
       
       if (open[limit] > close[limit])
       {
@@ -115,14 +120,10 @@ int OnCalculate(const int ratesTotal,
    g_lastBarTime = time[1];
    
    //--- calculate
-   ArraySetAsSeries(high, true);
-   ArraySetAsSeries(low,  true);
-   ArraySetAsSeries(open, true);
-   ArraySetAsSeries(time, true);
-
    for (int i = limit - 1; i > 0; i--)
    {
       g_bufferTestOpenPrice[i] = open[i];
+      // g_bufferTestClosePrice[i] = close[i];
 
       if (high[i+1] < high[i])
       {
@@ -194,12 +195,14 @@ void BufferInitialize()
    ArrayInitialize(g_bufferZigZagChangePoints, BUFFER_EMPTY);
    ArrayInitialize(g_bufferZigZagTrend, BUFFER_EMPTY);
    ArrayInitialize(g_bufferTestOpenPrice, BUFFER_EMPTY);
+   // ArrayInitialize(g_bufferTestClosePrice, BUFFER_EMPTY);
 
    ArraySetAsSeries(g_bufferZigZagUp, true);
    ArraySetAsSeries(g_bufferZigZagDown, true);
    ArraySetAsSeries(g_bufferZigZagChangePoints, true);
    ArraySetAsSeries(g_bufferZigZagTrend, true);
    ArraySetAsSeries(g_bufferTestOpenPrice, true);
+   // ArraySetAsSeries(g_bufferTestClosePrice, true);
 }
 
 //+------------------------------------------------------------------+
