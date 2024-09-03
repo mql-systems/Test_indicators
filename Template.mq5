@@ -33,6 +33,8 @@ int OnInit()
    SetIndexBuffer(0, BufferLabel1, INDICATOR_DATA);
 
    PlotIndexSetDouble(0, PLOT_EMPTY_VALUE, 0.0);
+
+   IndicatorSetString(INDICATOR_SHORTNAME, "Test("+string(_Period)+")");
    
    return INIT_SUCCEEDED;
 }
