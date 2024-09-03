@@ -6,7 +6,8 @@
 #property copyright "Copyright 2024, Diamond Systems Corp."
 #property link      "https://algotrading.today"
 #property version   "1.00"
-#property indicator_separate_window
+#property indicator_chart_window
+// #property indicator_separate_window
 //--- 
 #property indicator_minimum 1
 #property indicator_maximum 10
